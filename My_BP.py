@@ -121,7 +121,7 @@ class My_BP:
                 data = self.train_data[i][0]
                 y_true = self.train_data[i][1]
                 per_layer_out = []# 每一层的输出，用一个list存放，
-                per_layer_deriv_out=[] #每一层的倒数输出，同样用list存放
+                per_layer_deriv_out=[] #每一层的导数输出，同样用list存放
                 tmp_layer_out = data #每一层的输出，临时变量
                 for layer in range(len(self.hidden_layer)):  # 进入神经网络开始正向传播
                     print(len(self.hidden_layer[layer][0].weights))  # 打印每层隐藏层第一个神经元的weights_size
@@ -154,22 +154,56 @@ class My_BP:
                 # 输出层权重梯度下降
                 for i,weight in enumerate(self.y.weights):
                     weight-=dL_dy_pred*tmp_layer_out[i]*dypred_dy
-                # 进入隐藏层反向传播，从最后一个隐藏层向前传播
-                for layer in reversed(self.hidden_layer):
-                    for i in range(len(layer)):
-                        # 不妨设最后一层隐藏层的输出为[x1,···,xj],倒数第二层(如果有的话)的隐藏层输出为[y1,···,yj]
-                        # 设输出为x1的神经元hn1(就是最后一层隐藏层的第一个神经元)的权重为[Wn1,···,Wnj],x1=f(Wn1·y1+···+bn1),x2=f(Wn2·y1+···+bn2)
-                        # 求hn1的权重Wn1的梯度下降值
-                        # ∂L/∂Wn1=(∂L/∂y_pred)*(∂y_pred/∂x1)*(∂x1/∂Wn1)
-                        # ∂y_pred/∂x1=w1·y.deriv_sigmod(tmp_layer_out)
-                        # ∂x1/∂Wn1=y1*hn1.deriv_sigmod()也就是∂x1/∂Wn1=y1*per_layer_deriv_out[n][i]
-                        # ∂L/∂Wn1=dL_dy_pred*self.y.weights[i]*self.y.deriv_sigmod()*per_layer_out[n-1][i]{y1}*per_layer_deriv_out[n][i]
-                        # 如果隐藏层前一层是输入层
-                        hidden_neuron=layer[i]
+                # 进入隐藏层反向传播，从最后一个隐藏层向前传播 layer为每个隐藏层
+
+                for i,layer in enumerate(list(reversed(self.hidden_layer))):
+                    # 遍历每个隐藏层的每个神经元
+                    for j in range(len(layer)):
+                        hidden_neuron=layer[j]
+                        # 遍历每个隐藏层的神经元的权重
+                        for weight_seri in range(len(hidden_neuron.weights)):
+                            dL_dweight=0
+                            #        h11        h21         h31
+                            #
+                            # x1     h12        h22         h32
+                            #
+                            # x2     h13        h23         h33         y
+                            #
+                            # x3     h14        h24         h34
+                            #
+                            #        h15        h25         h35
+                            #         2          1           0
+                            pass
+                            # for i_ in range(i):
+                            #     for j_ in list(reversed(self.hidden_layer))[i_]:
+                            #         if j_ == weight_seri:
 
 
 
+class TreeNode:
+    def __init__(self,x,children:list):
+        self.val=x
+        self.children=children
 
+class NetWork_Tree:
+    def __init__(self,NetWork_List:list):
+        """Tree_list=[[y],[a1,a2,a3,a4,a5],[b1,b2,b3,b4,b5],[c1,c2,c3,c4,c5],[x1,x2,x3]]"""
+        self.Tree_list=NetWork_List
+        self.path=[]
+
+    def create_Tree(self):
+        # 将所有神经元存放在treenode中
+        for i in range(len(self.Tree_list)-1):
+            for j in range(len(self.Tree_list[i])):
+                self.Tree_list[i][j]=TreeNode(self.Tree_list[i][j],[])
+        # 将神经元连接起来
+        for i in range(len(self.Tree_list)-1):
+            for j in range(len(self.Tree_list[i])):
+                self.Tree_list[i][j].children=self.Tree_list[i+1]
+
+    def find_path(self,aim_node:TreeNode,deep=0):
+        """找路径函数"""
+        pass
 
 
 
@@ -181,5 +215,9 @@ def data_processer(data_list: list) -> list:
 if __name__ == '__main__':
     train_data = list(zip(data_processer(train_images), train_labels))
     test_data = list(zip(data_processer(test_images), test_labels))
+    Tree_list = [['y'], ['a1', 'a2', 'a3', 'a4', 'a5'], ['b1', 'b2', 'b3', 'b4', 'b5'], ['c1', 'c2', 'c3', 'c4', 'c5'], ['x1', 'x2', 'x3']]
+    test_Tree=NetWork_Tree(NetWork_List=Tree_list)
+    test_Tree.create_Tree()
+    print(test_Tree.Tree_list[0][0].children)
     # print(len(train_data[0][0]),train_data[0][1])
     # my_bp_network=My_BP(train_data=train_data,test_data=test_data,hidden_level=2)
